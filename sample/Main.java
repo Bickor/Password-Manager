@@ -58,6 +58,8 @@ public class Main extends Application {
         headers.getChildren().addAll(userName, email, password);
         holder.getChildren().add(headers);
 
+        //FIXME
+        // - when i add passwords, and come back, passwords are repeated.
         //Add every password to list
         for (int i = 0; i < passwords.size(); i++) {
 
