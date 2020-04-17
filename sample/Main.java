@@ -1,5 +1,6 @@
 package sample;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.io.File;
@@ -32,20 +33,17 @@ public class Main extends Application {
         Label name = new Label("Password Manager");
         Button enter = new Button("Enter");
         enter.setOnMouseClicked(e -> {
-            showPasswords(primaryStage);
+            showPasswordsScreen(primaryStage);
         });
 
         root.getChildren().addAll(name, enter);
-
-        primaryStage.setScene(new Scene(root));
+        loadPasswords("passwords.txt");
+        primaryStage.setScene(new Scene(root, 500, 800));
         primaryStage.show();
     }
 
-    public static void showPasswords(Stage primaryStage) {
+    public static void showPasswordsScreen(Stage primaryStage) {
         primaryStage.setTitle("Password Manager");
-
-        passwords.add(new Password("Bickor", "martin.heberling.dalies@gmail.com", "martin1"));
-        passwords.add(new Password("Bickor2", "martin.heberling.dalies@gmail.com2", "martin2"));
 
         //Holder for all passwords
         VBox holder = new VBox();
@@ -58,8 +56,6 @@ public class Main extends Application {
         headers.getChildren().addAll(userName, email, password);
         holder.getChildren().add(headers);
 
-        //FIXME
-        // - when i add passwords, and come back, passwords are repeated.
         //Add every password to list
         for (int i = 0; i < passwords.size(); i++) {
 
@@ -71,14 +67,14 @@ public class Main extends Application {
         //Button to add passwords
         Button add = new Button("Add Password");
         add.setOnMouseClicked(e -> {
-            addPasswordPage(primaryStage);
+            addPasswordScreen(primaryStage);
         });
 
         holder.getChildren().add(add);
-        primaryStage.setScene(new Scene(holder));
+        primaryStage.setScene(new Scene(holder, primaryStage.getWidth(), primaryStage.getHeight() - 22));
     }
 
-    public static void addPasswordPage(Stage primaryStage) {
+    public static void addPasswordScreen(Stage primaryStage) {
         primaryStage.setTitle("Add Password");
         VBox root = new VBox();
 
@@ -105,19 +101,65 @@ public class Main extends Application {
             if (usernameText.getText() != null
                     && emailText.getCharacters() != ""
                     && passwordText.getCharacters() != "") {
+
+                //Add it to arraylist
                 passwords.add(new Password(usernameText.getCharacters().toString(),
                         emailText.getCharacters().toString(),
                         passwordText.getCharacters().toString()));
-                showPasswords(primaryStage);
+                try {
+                    FileWriter fileWriter = new FileWriter("passwords.txt", true);
+                    fileWriter.append(usernameText.getCharacters().toString()
+                            + "," + emailText.getCharacters().toString()
+                            + "," + passwordText.getCharacters().toString());
+                    fileWriter.append(System.lineSeparator());
+                    fileWriter.close();
+                } catch (IOException y){
+                    System.out.println("An error occurred.");
+                    y.printStackTrace();
+                }
+                showPasswordsScreen(primaryStage);
             } else {
                 System.out.println("NEED TO FILL SPACES");
             }
         });
 
-        root.getChildren().addAll(userNameInput, emailInput, passwordInput, done);
+        Button back = new Button("Back");
+        back.setOnMouseClicked(e -> {
+            showPasswordsScreen(primaryStage);
+        });
 
-        Scene addPassword = new Scene(root);
+        root.getChildren().addAll(userNameInput, emailInput, passwordInput, done, back);
+
+        Scene addPassword = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight() - 22);
         primaryStage.setScene(addPassword);
+    }
+
+    public static void loadPasswords(String passwordsFile) {
+        try {
+            //Load all passwords into the arraylist
+            File file = new File(passwordsFile);
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] data = line.split(",");
+                passwords.add(new Password(data[0], data[1], data[2]));
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            try {
+                //If file doesn't exists, create it
+                File newFile = new File("passwords.txt");
+                if (newFile.createNewFile()) {
+                    System.out.println("File created: " + newFile.getName());
+                } else {
+                    System.out.println("File already exists.");
+                }
+            } catch (IOException y){
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+
+        }
     }
 
     public static void main(String[] args) {
