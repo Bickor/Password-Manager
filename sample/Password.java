@@ -6,9 +6,9 @@ public class Password {
     private String userName;
     private String email;
 
-    public Password(String password, String userName, String email) {
-        this.password = password;
+    public Password(String userName, String email, String password) {
         this.userName = userName;
+        this.password = password;
         this.email = email;
     }
 
